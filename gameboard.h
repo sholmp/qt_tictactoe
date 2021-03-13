@@ -7,9 +7,6 @@
 #include <QPair>
 #include <QGridLayout>
 
-
-
-
 class Field : public QPushButton
 {
     Q_OBJECT
@@ -24,16 +21,14 @@ signals:
 
 };
 
-
-
 class GameBoard : public QWidget
 {
     Q_OBJECT
 public:
-    explicit GameBoard(QWidget *parent = nullptr);
+    explicit GameBoard(uint width = 3, QWidget *parent = nullptr);
 
 public slots:
-    void restartGame();
+    void beginNewGame();
     void handleButtonClick(int i, int j);
 
 signals:
@@ -59,6 +54,7 @@ private:
 
     GameState state_ = GameState::NotStarted;
     Turn turn_ = Turn::Player1;
+    int width_;
 
 
 private:

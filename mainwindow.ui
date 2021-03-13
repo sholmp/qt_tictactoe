@@ -16,9 +16,9 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QPushButton" name="startGameButton">
+     <widget class="QPushButton" name="beginNewGameButton">
       <property name="text">
-       <string>PushButton</string>
+       <string>Begin new game</string>
       </property>
      </widget>
     </item>
@@ -34,9 +34,6 @@
        <string>Player 1</string>
       </property>
      </widget>
-    </item>
-    <item>
-     <widget class="GameBoard" name="widget" native="true"/>
     </item>
     <item>
      <widget class="QLabel" name="player2Label">
@@ -65,14 +62,6 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>GameBoard</class>
-   <extends>QWidget</extends>
-   <header>gameboard.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

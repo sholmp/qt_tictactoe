@@ -5,6 +5,7 @@
 #include <QDebug>
 
 
+
 Field::Field(int i, int j, QWidget* parent):
     QPushButton(parent), i_(i), j_(j)
 {
@@ -12,18 +13,16 @@ Field::Field(int i, int j, QWidget* parent):
 }
 
 
-
-
-GameBoard::GameBoard(QWidget *parent) : QWidget(parent)
+GameBoard::GameBoard(uint width, QWidget *parent) : QWidget(parent),
+    width_(width)
 {
-
     layout_ = new QGridLayout;
     setLayout(layout_);
 
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < width_; i++)
     {
         QVector<Field*> row;
-        for(int j = 0; j < 3; j++)
+        for(int j = 0; j < width_; j++)
         {
             Field* field = new Field(i,j);
             row.push_back(field);
@@ -37,20 +36,19 @@ GameBoard::GameBoard(QWidget *parent) : QWidget(parent)
         grid_.push_back(row);
     }
 
-
-    QPushButton* restartButton = new QPushButton("restart game");
-    layout_->addWidget(restartButton);
-    connect(restartButton, &QPushButton::clicked, this, &GameBoard::restartGame);
+    beginNewGame();
 }
 
-void GameBoard::restartGame()
+void GameBoard::beginNewGame()
 {
     state_ = GameState::Begun;
     turn_ = Turn::Player1;
 
-    emit setTextOnFields(""); // Clear every field
+    emit setTextOnFields(""); // Every field's setText slot has been connected to this signal
 }
 
+// When a field is clicked it enits a signal with its coordinates in the grid.
+// That signal is connected to this slot
 void GameBoard::handleButtonClick(int i, int j)
 {
     Field* field = dynamic_cast<Field*>(layout_->itemAtPosition(i,j)->widget());
@@ -69,7 +67,7 @@ void GameBoard::handleButtonClick(int i, int j)
 
     if(winConditionSatisfied())
     {
-        restartGame();
+       beginNewGame();
     }
 
 }
@@ -78,7 +76,7 @@ void GameBoard::handleButtonClick(int i, int j)
 bool GameBoard::winConditionSatisfied()
 {
     // Check horizontally
-    int N = grid_.size(); //Our application only works with square maps
+    int N = width_; //Our application only works with square maps
     for(int i = 0; i < N; i++)
     {
         int matches = 1; // first symbol matches itself
@@ -129,7 +127,7 @@ bool GameBoard::winConditionSatisfied()
     if(matches == N && symbol != "")
         return true;
 
-    return false;
+    return false; // If none of the previous checks returned true, win condition is not satisfied
 }
 
 
