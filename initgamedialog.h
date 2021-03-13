@@ -15,6 +15,9 @@ public:
     explicit InitGameDialog(QWidget *parent = nullptr);
     ~InitGameDialog();
 
+    QString player1Name();
+    QString player2Name();
+    uint boardWidth();
 signals:
     void sendPlayerNames(QString player1_name, QString player2_name);
 
