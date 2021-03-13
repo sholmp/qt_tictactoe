@@ -25,7 +25,9 @@ class GameBoard : public QWidget
 {
     Q_OBJECT
 public:
-    explicit GameBoard(uint width = 3, QWidget *parent = nullptr);
+    explicit GameBoard(QWidget *parent = nullptr);
+
+    void init(int width);
 
 public slots:
     void beginNewGame();
@@ -34,6 +36,8 @@ public slots:
 signals:
     void setTextOnFields(QString text);
 
+    // winner is the id of the player who won;
+    void gameOver(int winner);
 
 
 private:
@@ -54,11 +58,12 @@ private:
 
     GameState state_ = GameState::NotStarted;
     Turn turn_ = Turn::Player1;
-    int width_;
+    int width_ = 3;
 
 
 private:
     bool winConditionSatisfied();
+    bool containsAnXorAnO(Field* field);
 
 };
 

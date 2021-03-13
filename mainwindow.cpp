@@ -8,7 +8,6 @@
 #include <QDebug>
 #include <QLabel>
 
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -24,22 +23,17 @@ MainWindow::MainWindow(QWidget *parent)
 
         ui->player1Label->setText(dialog.player1Name());
         ui->player2Label->setText(dialog.player2Name());
+        ui->gameBoard->init(dialog.boardWidth());
 
-
-        //Create and add gameboard to mainwindow
-        GameBoard* board = new GameBoard(dialog.boardWidth(), this);
-        ui->centralwidget->layout()->addWidget(board);
-        connect(ui->beginNewGameButton, &QPushButton::clicked, board, &GameBoard::beginNewGame);
+        connect(ui->beginNewGameButton, &QPushButton::clicked, ui->gameBoard, &GameBoard::beginNewGame);
+        connect(ui->gameBoard, &GameBoard::gameOver, this, &MainWindow::handleGameOver);
     }
     else // production mode
     {
-        GameBoard* board = new GameBoard(3, this);
-        ui->centralwidget->layout()->addWidget(board);
-        connect(ui->beginNewGameButton, &QPushButton::clicked, board, &GameBoard::beginNewGame);
-
+        connect(ui->beginNewGameButton, &QPushButton::clicked, ui->gameBoard, &GameBoard::beginNewGame);
+        connect(ui->gameBoard, &GameBoard::gameOver, this, &MainWindow::handleGameOver);
+        ui->gameBoard->init(3);
     }
-
-
 
 }
 
@@ -47,4 +41,18 @@ MainWindow::~MainWindow()
 {
     delete ui;
 
+}
+
+void MainWindow::handleGameOver(int winner)
+{
+    if(winner == 1)
+    {
+        int current_score = ui->player1Score->text().toInt();
+        ui->player1Score->setText(QString::number(current_score + 1));
+    }
+    else
+    {
+        int current_score = ui->player2Score->text().toInt();
+        ui->player2Score->setText(QString::number(current_score + 1));
+    }
 }

@@ -13,9 +13,15 @@ Field::Field(int i, int j, QWidget* parent):
 }
 
 
-GameBoard::GameBoard(uint width, QWidget *parent) : QWidget(parent),
-    width_(width)
+GameBoard::GameBoard(QWidget *parent) : QWidget(parent)
 {
+
+}
+
+
+void GameBoard::init(int width)
+{
+    width_ = width;
     layout_ = new QGridLayout;
     setLayout(layout_);
 
@@ -47,28 +53,29 @@ void GameBoard::beginNewGame()
     emit setTextOnFields(""); // Every field's setText slot has been connected to this signal
 }
 
-// When a field is clicked it enits a signal with its coordinates in the grid.
+// When a field is clicked it emits a signal with its coordinates in the grid.
 // That signal is connected to this slot
 void GameBoard::handleButtonClick(int i, int j)
 {
-    Field* field = dynamic_cast<Field*>(layout_->itemAtPosition(i,j)->widget());
-    if(!field)
-    {
-        qDebug() << "bad dynamic cast";
+    Field* field = grid_[i][j];
+    if(field->text().length() != 0) //There is already an X or an O
         return;
-    }
 
     if(turn_ == Turn::Player1)
         field->setText("X");
     else if(turn_ == Turn::Player2)
         field->setText("O");
 
-    turn_ = static_cast<Turn>((static_cast<int>(turn_) + 1) % 2);
-
     if(winConditionSatisfied())
     {
+       if(turn_ == Turn::Player1)
+           emit gameOver(1);
+       else
+           emit gameOver(2);
        beginNewGame();
     }
+
+    turn_ = static_cast<Turn>((static_cast<int>(turn_) + 1) % 2);
 
 }
 
@@ -128,6 +135,11 @@ bool GameBoard::winConditionSatisfied()
         return true;
 
     return false; // If none of the previous checks returned true, win condition is not satisfied
+}
+
+bool GameBoard::containsAnXorAnO(Field *field)
+{
+    return field->text() == "X" || field->text() == "O";
 }
 
 
