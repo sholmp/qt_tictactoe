@@ -16,34 +16,31 @@ Field::Field(int i, int j, QWidget* parent):
 
 GameBoard::GameBoard(QWidget *parent) : QWidget(parent)
 {
+
     layout_ = new QGridLayout;
     setLayout(layout_);
 
     for(int i = 0; i < 3; i++)
     {
+        QVector<Field*> row;
         for(int j = 0; j < 3; j++)
         {
             Field* field = new Field(i,j);
-            fields_.push_back(field);
+            row.push_back(field);
             layout_->addWidget(field,i,j);
+
+            connect(field, &Field::fieldClicked, this, &GameBoard::handleButtonClick);
+            connect(this, &GameBoard::setTextOnFields, field, &Field::setText);
+            field->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred); //Make field resize when given more space
+
         }
+        grid_.push_back(row);
     }
-
-
-    for(auto field : fields_)
-        connect(field, &Field::fieldClicked, this, &GameBoard::handleButtonClick);
 
 
     QPushButton* restartButton = new QPushButton("restart game");
     layout_->addWidget(restartButton);
     connect(restartButton, &QPushButton::clicked, this, &GameBoard::restartGame);
-
-    //Make buttons resize
-
-    for(auto field : fields_)
-    {
-        field->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    }
 }
 
 void GameBoard::restartGame()
@@ -51,8 +48,7 @@ void GameBoard::restartGame()
     state_ = GameState::Begun;
     turn_ = Turn::Player1;
 
-    for(auto field : fields_)
-        field->setText("");
+    emit setTextOnFields(""); // Clear every field
 }
 
 void GameBoard::handleButtonClick(int i, int j)
@@ -71,35 +67,69 @@ void GameBoard::handleButtonClick(int i, int j)
 
     turn_ = static_cast<Turn>((static_cast<int>(turn_) + 1) % 2);
 
-    bool top = EqualFieldValues({0,0}, {0,1}, {0,2});
-    bool mid_hoz = EqualFieldValues({1,0}, {1,1}, {1,2}); //middle horizontal
-    bool bot = EqualFieldValues({2,0}, {2,1}, {2,2}); //bottom
-    bool left = EqualFieldValues({0,0}, {1,0}, {2,0}); //left
-    bool mid_vert = EqualFieldValues({0,1}, {1,1}, {2,1}); //middle vertical
-    bool right = EqualFieldValues({0,2}, {1,2}, {2,2}); //right
-
-    bool diag1 = EqualFieldValues({0,0}, {1,1}, {2,2}); //right
-    bool diag2 = EqualFieldValues({2,0}, {1,1}, {0,2}); //right
-
-
-    if(top || mid_hoz || bot || left || mid_vert || right || diag1 || diag2)
+    if(winConditionSatisfied())
+    {
         restartGame();
+    }
+
 }
 
-bool GameBoard::EqualFieldValues(std::pair<int, int> e1, std::pair<int, int> e2, std::pair<int, int> e3)
+
+bool GameBoard::winConditionSatisfied()
 {
-    QGridLayout* grid = dynamic_cast<QGridLayout*>(layout());
+    // Check horizontally
+    int N = grid_.size(); //Our application only works with square maps
+    for(int i = 0; i < N; i++)
+    {
+        int matches = 1; // first symbol matches itself
+        QString symbol = grid_[i][0]->text(); //Check if field holds X, O or is blank
+        for(int j = 1; j < N; j++)
+        {
+            if(grid_[i][j]->text() == symbol)
+                matches++;
+        }
+        if(matches == N && symbol != "")
+            return true;
+    }
 
-    Field* field1 = dynamic_cast<Field*>(grid->itemAtPosition(e1.first, e1.second)->widget());
-    Field* field2 = dynamic_cast<Field*>(grid->itemAtPosition(e2.first, e2.second)->widget());
-    Field* field3 = dynamic_cast<Field*>(grid->itemAtPosition(e3.first, e3.second)->widget());
+    //Check vertically
+    for(int j = 0; j < N; j++)
+    {
+        int matches = 1; // first symbol matches itself
+        QString symbol = grid_[0][j]->text(); //Check if field holds X, O or is blank
+        for(int i = 1; i < N; i++)
+        {
+            if(grid_[i][j]->text() == symbol)
+                matches++;
+        }
+        if(matches == N && symbol != "")
+            return true;
+    }
 
-    bool allEqual = field1->text() == 'X' || field1->text() == 'O'; //Don't match 3 empty fields
-    allEqual &= field1->text() == field2->text();
-    allEqual &= field2->text() == field3->text();
-    allEqual &= field1->text() == field3->text();
+    //Check diagonally
+    //First check top left to bottom right:
+    QString symbol = grid_[0][0]->text();
+    int matches = 1;
+    for(int i = 1; i < N; i++)
+    {
+        if(grid_[i][i]->text() == symbol)
+            matches++;
+    }
+    if(matches == N && symbol != "")
+        return true;
 
-    return allEqual;
+    //check bottom left to top right
+    matches = 1;
+    symbol = grid_[N-1][0]->text();
+    for(int i = N-2, j = 1; j < N; i--, j++)
+    {
+        if(grid_[i][j]->text() == symbol)
+            matches++;
+    }
+    if(matches == N && symbol != "")
+        return true;
+
+    return false;
 }
 
 

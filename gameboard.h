@@ -19,23 +19,12 @@ public:
     int i_;
     int j_;
 
-
 signals:
     void fieldClicked(int i, int j);
 
 };
 
 
-
-enum class GameState
-{
-    NotStarted, Begun, Ended
-};
-
-enum class Turn
-{
-    Player1, Player2
-};
 
 class GameBoard : public QWidget
 {
@@ -47,19 +36,33 @@ public slots:
     void restartGame();
     void handleButtonClick(int i, int j);
 
-
 signals:
+    void setTextOnFields(QString text);
+
+
 
 private:
     QVector<Field*> fields_;
     QGridLayout* layout_;
+    QVector<QVector<Field*>> grid_;
+
+    enum class GameState
+    {
+        NotStarted, Begun, Ended
+    };
+
+    enum class Turn
+    {
+        Player1, Player2
+    };
+
 
     GameState state_ = GameState::NotStarted;
     Turn turn_ = Turn::Player1;
 
-private:
-    bool EqualFieldValues(std::pair<int,int> e1, std::pair<int,int> e2, std::pair<int,int> e3);
 
+private:
+    bool winConditionSatisfied();
 
 };
 
